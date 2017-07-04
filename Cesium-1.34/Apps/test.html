@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="description" content="CZML Polyline">
+    <meta name="cesium-sandcastle-labels" content="CZML">
+    <title>Cesium Demo</title>
+    <script type="text/javascript" src="../Sandcastle-header.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.20/require.js"></script>
+    <script type="text/javascript">
+    require.config({
+        baseUrl : '../../../Source',
+        waitSeconds : 60
+    });
+    </script>
+</head>
+<body class="sandcastle-loading" data-sandcastle-bucket="bucket-requirejs.html">
+<style>
+@import url(../templates/bucket.css);
+</style>
+<div id="cesiumContainer" class="fullSize"></div>
+<div id="loadingOverlay"><h1>Loading...</h1></div>
+<div id="toolbar"></div>
+
+<script id="cesium_sandcastle_script">
+function startup(Cesium) {
+    'use strict';
+//Sandcastle_Begin
+var viewer = new Cesium.Viewer('cesiumContainer');
+var scene = viewer.scene;
+var canvas = viewer.canvas;
+canvas.setAttribute('tabindex', '0'); // needed to put focus on the canvas
+canvas.onclick = function() {
+    canvas.focus();
+};
+var ellipsoid = scene.globe.ellipsoid;
+
+var blueBox = viewer.entities.add({
+    name : 'Blue box',
+    position: Cesium.Cartesian3.fromDegrees(-120.0, 40.0, 0),
+    box : {
+        dimensions : new Cesium.Cartesian3(730000.0, 300000.0, 100000.0),
+        material : Cesium.Color.BLUE.withAlpha(0.7),
+        outline : true,
+        outlineColor : Cesium.Color.BLACK
+    }
+});
+
+var redBox = viewer.entities.add({
+    name : 'Red box with black outline',
+    position: Cesium.Cartesian3.fromDegrees(-112.0, 40.0, 0),
+    box : {
+        dimensions : new Cesium.Cartesian3(700000.0, 300000.0, 100000.0),
+        material : Cesium.Color.RED.withAlpha(0.7),
+        outline : true,
+        outlineColor : Cesium.Color.BLACK
+    }
+});
+
+var whiteLine = viewer.entities.add({
+    name : 'line on the surface',
+    polyline : {
+        positions : Cesium.Cartesian3.fromDegreesArray([-110.40, 40.60,
+                                                        -118.52, 40.56]),
+        width : 50,
+        material : Cesium.Color.WHITE.withAlpha(0.7)
+    }
+});
+        
+viewer.camera.flyTo({
+    destination : Cesium.Cartesian3.fromDegrees(-110.40, 40.60, 0.0),
+    orientation : {
+        heading : Cesium.Math.toRadians(-90.0),
+        pitch : Cesium.Math.toRadians(0.0),
+        roll : 0.0
+    }
+});
+
+
+var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+handler.setInputAction(function(movement) {
+    var pickedObject = scene.pick(movement.endPosition);
+
+    if (Cesium.defined(pickedObject) && (pickedObject.id === whiteLine)) {
+        var cameraHeight = ellipsoid.cartesianToCartographic(viewer.camera.position).height;
+        var moveRate = cameraHeight / 100.0;
+        viewer.camera.moveForward(moveRate);
+        console.log("picked line");
+        
+    }
+    console.log("move camera");
+},Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+  //Sandcastle_End
+    Sandcastle.finishedLoading();
+}
+if (typeof Cesium !== "undefined") {
+    startup(Cesium);
+} else if (typeof require === "function") {
+    require(["Cesium"], startup);
+}
+</script>
+</body>
+</html>
